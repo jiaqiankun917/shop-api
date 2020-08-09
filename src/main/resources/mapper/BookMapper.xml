@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.fh.shop.api.book.mapper.BookMapper">
+
+<sql id="whereSql">
+	<where>
+		<if test="bookName!=null and bookName!=''">
+			bookName like concat('%',#{bookName},'%')
+		</if>
+
+		<if test="typeId != null and typeId != -1">
+			and typeId = #{typeId}
+		</if>
+
+		<if test="minCreateTime!=null">
+			and createTime >=#{minCreateTime}
+		</if>
+		<if test="maxCreateTime!=null">
+			and createTime &lt;=#{maxCreateTime}
+		</if>
+		<if test="minPrice!= null">
+			and price >=#{minPrice}
+		</if>
+		<if test="maxPrice!=null">
+			and price &lt;=#{maxPrice}
+		</if>
+	</where>
+</sql>
+
+
+
+
+	<select id="findCount" parameterType="com.fh.shop.api.book.param.BookParam" resultType="long">
+		select count(*) from t_booktype bt left join t_book b on bt.id=b.typeId
+		<include refid="whereSql"></include>
+	</select>
+
+
+	<select id="findPageList" parameterType="com.fh.shop.api.book.param.BookParam" resultType="com.fh.shop.api.book.po.Book">
+		select t.* from (
+			select b.id,bookName,price,createTime,typeId,bt.name 'typeName' from t_book b left join t_booktype bt on b.typeId=bt.id
+			<include refid="whereSql"></include>
+			order by b.id desc
+		) t
+		limit #{start},#{length}
+	</select>
+
+
+</mapper>
